@@ -185,7 +185,7 @@ class _MyHomePageState extends State<MyHomePage> {
               //           EthereumAddress.fromHex(identityOwner),
               //           'setAttribute',
               //           hexToBytes(
-              //               '0x6469642f7075622f456432353531392f766572694b65792f6261736535380000'),
+              //               '0x6469642f7075622f456432353531392f766572694b65792f6261736536340000'),
               //           deviceKey,
               //           300,
               //         ],
@@ -204,7 +204,7 @@ class _MyHomePageState extends State<MyHomePage> {
               //         hexToBytes(sign.r.toRadixString(16)),
               //         hexToBytes(sign.s.toRadixString(16)),
               //         hexToBytes(
-              //             '0x6469642f7075622f456432353531392f766572694b65792f6261736535380000'),
+              //             '0x6469642f7075622f456432353531392f766572694b65792f6261736536340000'),
               //         hexToBytes(
               //             '0x8b7f9af9bb54309ead60930887bc750c904ecc760959b0adefe15d8da74baab6'),
               //         BigInt.from(300),
@@ -215,125 +215,251 @@ class _MyHomePageState extends State<MyHomePage> {
               //   ),
               // ),
               ElevatedButton(
-                  onPressed: () async {
-                    Web3ServiceImpl web3serviceImpl = Web3ServiceImpl();
+                onPressed: () async {
+                  Web3ServiceImpl web3serviceImpl = Web3ServiceImpl();
 
-                    web3serviceImpl.init(
-                        'https://nd-597-324-099.p2pify.com/b539bdf723b75c6a98e7038674ede7f0');
+                  web3serviceImpl.init(
+                      'https://nd-597-324-099.p2pify.com/b539bdf723b75c6a98e7038674ede7f0');
 
-                    /// identityOwner
-                    String? identityOwner = await web3serviceImpl
-                        .getIdentity(controllerKey!.address.hex);
-                    print('identityOwner : ' + identityOwner);
+                  /// identityOwner
+                  String? identityOwner = await web3serviceImpl
+                      .getIdentity(controllerKey!.address.hex);
+                  print('identityOwner : ' + identityOwner);
 
-                    /// nonce
-                    String? nonce =
-                        await web3serviceImpl.getNonce(identityOwner);
-                    print('nonce : ' + nonce);
+                  /// nonce
+                  String? nonce = await web3serviceImpl.getNonce(identityOwner);
+                  print('nonce : ' + nonce);
 
-                    var credentials = CustomCredentialEipService(
-                      client: web3serviceImpl.client,
-                      chainId: 5,
-                      privateKey: controllerKey,
-                    );
+                  var credentials = CustomCredentialEipService(
+                    client: web3serviceImpl.client,
+                    chainId: 5,
+                    privateKey: controllerKey,
+                  );
 
-                    final payload = Solidity().solidityPack(
-                      [
-                        EthereumAddress.fromHex(
-                          '0xdca7ef03e98e0dc2b855be647c39abe984fcf21b',
-                        ),
-                        int.parse(nonce),
-                        EthereumAddress.fromHex(controllerKey!.address.hex),
-                        'setAttribute',
-                        hexToBytes(
-                            '0x6469642f7075622f456432353531392f766572694b65792f6261736535380000'),
-                        deviceKey,
-                        300,
-                      ],
-                    );
-                    final sign = await credentials.signToSignature(
-                      payload,
-                    );
-
-                    log('big to int' + sign.r.toRadixString(16));
-
-                    final setAttributeSign =
-                        await web3serviceImpl.setAttributeSigned(
-                      EthereumAddress.fromHex(controllerKey!.address.hex),
-                      27,
-                      hexToBytes(sign.r.toRadixString(16)),
-                      hexToBytes(sign.s.toRadixString(16)),
-                      hexToBytes(
-                          '0x6469642f7075622f456432353531392f766572694b65792f6261736535380000'),
-                      deviceKey!,
-                      BigInt.from(300),
-                    );
-
-                    log(bytesToHex(setAttributeSign));
-
-                    final nonceTx =
-                        await web3serviceImpl.client.getTransactionCount(
+                  final payload = Solidity().solidityPack(
+                    [
                       EthereumAddress.fromHex(
-                          '0xd25D03722dE1D3E911D68adf0F50FCC039b5B00C'),
-                      atBlock: const BlockNum.pending(),
-                    );
-
-                    final txObject = Transaction(
-                      nonce: nonceTx,
-                      from: EthereumAddress.fromHex(
-                          '0xd25D03722dE1D3E911D68adf0F50FCC039b5B00C'),
-
-                      /// address contract
-                      to: EthereumAddress.fromHex(
-                          '0xdCa7EF03e98e0DC2B855bE647C39ABe984fcF21B'),
-
-                      /// native / matic
-                      value: EtherAmount.inWei(BigInt.from(0)),
-
-                      /// 3jt, 500rb
-                      maxGas: 100000,
-
-                      /// 1 gwei (10^9 wei)
-                      gasPrice: EtherAmount.inWei(
-                        BigInt.from(1500000000),
-                        // await web3serviceImpl.getPrice(),
+                        '0xdca7ef03e98e0dc2b855be647c39abe984fcf21b',
                       ),
+                      int.parse(nonce),
+                      EthereumAddress.fromHex(controllerKey!.address.hex),
+                      'setAttribute',
+                      hexToBytes(
+                          '0x6469642f7075622f456432353531392f766572694b65792f6261736536340000'),
+                      deviceKey,
+                      300,
+                    ],
+                  );
+                  final sign = await credentials.signToSignature(
+                    payload,
+                  );
 
-                      /// mau ke fungsi mana parameternya apa,
-                      /// amount USDC disini
-                      data: setAttributeSign,
+                  log('big to int' + sign.r.toRadixString(16));
 
-                      /// ini untuk EIP1559
-                      /// 3000000000
-                      maxFeePerGas: EtherAmount.inWei(
-                        BigInt.from(1500000000),
-                        // await web3serviceImpl.getPrice(),
+                  final setAttributeSign =
+                      await web3serviceImpl.setAttributeSigned(
+                    EthereumAddress.fromHex(controllerKey!.address.hex),
+                    sign.v,
+                    hexToBytes(sign.r.toRadixString(16)),
+                    hexToBytes(sign.s.toRadixString(16)),
+                    hexToBytes(
+                        '0x6469642f7075622f456432353531392f766572694b65792f6261736536340000'),
+                    deviceKey!,
+                    BigInt.from(300),
+                  );
+
+                  log(bytesToHex(setAttributeSign));
+
+                  final nonceTx =
+                      await web3serviceImpl.client.getTransactionCount(
+                    EthereumAddress.fromHex(
+                        '0xd25D03722dE1D3E911D68adf0F50FCC039b5B00C'),
+                    atBlock: const BlockNum.pending(),
+                  );
+
+                  final txObject = Transaction(
+                    nonce: nonceTx,
+                    from: EthereumAddress.fromHex(
+                        '0xd25D03722dE1D3E911D68adf0F50FCC039b5B00C'),
+
+                    /// address contract
+                    to: EthereumAddress.fromHex(
+                        '0xdCa7EF03e98e0DC2B855bE647C39ABe984fcF21B'),
+
+                    /// native / matic
+                    value: EtherAmount.inWei(BigInt.from(0)),
+
+                    /// 3jt, 500rb
+                    maxGas: 100000,
+
+                    /// 1 gwei (10^9 wei)
+                    gasPrice: EtherAmount.inWei(
+                      BigInt.from(1500000000),
+                      // await web3serviceImpl.getPrice(),
+                    ),
+
+                    /// mau ke fungsi mana parameternya apa,
+                    /// amount USDC disini
+                    data: setAttributeSign,
+
+                    /// ini untuk EIP1559
+                    /// 3000000000
+                    maxFeePerGas: EtherAmount.inWei(
+                      BigInt.from(1500000000),
+                      // await web3serviceImpl.getPrice(),
+                    ),
+                    maxPriorityFeePerGas: EtherAmount.inWei(
+                      BigInt.from(1500000000),
+                      // await web3serviceImpl.getPrice(),
+                    ),
+                  );
+
+                  log(txObject.gasPrice!.getInWei.toString());
+                  final paymasterKey = EthPrivateKey.fromHex(
+                      '0x1b145e2a5b8d344038a5de9414e49b97905e0b0c62716027829f26c42e67891d');
+
+                  /// ini tadi error
+                  credentials = CustomCredentialEipService(
+                    privateKey: paymasterKey,
+                    client: web3serviceImpl.client,
+                    chainId: 5,
+                  );
+
+                  final result = await web3serviceImpl.client.sendTransaction(
+                    credentials,
+                    txObject,
+                    chainId: 5,
+                  );
+                  log('txHash ' + result);
+                },
+                child: Text('Send Goerli'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Web3ServiceImpl web3serviceImpl = Web3ServiceImpl();
+
+                  web3serviceImpl.init(
+                      'http://ec2-35-88-32-250.us-west-2.compute.amazonaws.com:8545');
+
+                  /// identityOwner
+                  String? identityOwner = await web3serviceImpl
+                      .getIdentity(controllerKey!.address.hex);
+                  print('identityOwner : ' + identityOwner);
+
+                  /// nonce
+                  String? nonce = await web3serviceImpl.getNonce(identityOwner);
+                  print('nonce : ' + nonce);
+
+                  var credentials = CustomCredentialEipService(
+                    client: web3serviceImpl.client,
+                    chainId: 100,
+                    privateKey: controllerKey,
+                  );
+
+                  final payload = Solidity().solidityPack(
+                    [
+                      /// contract address
+                      EthereumAddress.fromHex(
+                        '0x03d5003bf0e79C5F5223588F347ebA39AfbC3818',
                       ),
-                      maxPriorityFeePerGas: EtherAmount.inWei(
-                        BigInt.from(1500000000),
-                        // await web3serviceImpl.getPrice(),
-                      ),
-                    );
+                      int.parse(nonce),
+                      EthereumAddress.fromHex(controllerKey!.address.hex),
+                      'setAttribute',
+                      hexToBytes(
+                          '0x6469642f7075622f456432353531392f766572694b65792f6261736536340000'),
+                      hexToBytes(
+                          eth_sig_util.bytesToHex(deviceKey!, include0x: true)),
+                      300,
+                    ],
+                  );
+                  final sign = await credentials.signToSignature(
+                    payload,
+                  );
 
-                    log(txObject.gasPrice!.getInWei.toString());
-                    final paymasterKey = EthPrivateKey.fromHex(
-                        '0x1b145e2a5b8d344038a5de9414e49b97905e0b0c62716027829f26c42e67891d');
+                  log('big to int' + sign.r.toRadixString(16).padLeft(64, '0'));
+                  log('big to int' + sign.s.toRadixString(16).padLeft(64, '0'));
 
-                    /// ini tadi error
-                    credentials = CustomCredentialEipService(
-                      privateKey: paymasterKey,
-                      client: web3serviceImpl.client,
-                      chainId: 5,
-                    );
+                  final setAttributeSign =
+                      await web3serviceImpl.setAttributeSigned(
+                    EthereumAddress.fromHex(controllerKey!.address.hex),
+                    sign.v,
+                    hexToBytes(sign.r.toRadixString(16).padLeft(64, '0')),
+                    hexToBytes(
+                      sign.s.toRadixString(16).padLeft(64, '0'),
+                    ),
+                    hexToBytes(
+                        '0x6469642f7075622f456432353531392f766572694b65792f6261736536340000'),
+                    hexToBytes(
+                        eth_sig_util.bytesToHex(deviceKey!, include0x: true)),
+                    BigInt.from(300),
+                  );
 
-                    final result = await web3serviceImpl.client.sendTransaction(
-                      credentials,
-                      txObject,
-                      chainId: 5,
-                    );
-                    log('txHash ' + result);
-                  },
-                  child: Text('Send')),
+                  log(bytesToHex(setAttributeSign));
+
+                  final nonceTx =
+                      await web3serviceImpl.client.getTransactionCount(
+                    EthereumAddress.fromHex(
+                        '0xd25D03722dE1D3E911D68adf0F50FCC039b5B00C'),
+                    atBlock: const BlockNum.pending(),
+                  );
+
+                  final txObject = Transaction(
+                    nonce: nonceTx,
+                    from: EthereumAddress.fromHex(
+                        '0xd25D03722dE1D3E911D68adf0F50FCC039b5B00C'),
+
+                    /// address contract
+                    to: EthereumAddress.fromHex(
+                        '0x03d5003bf0e79C5F5223588F347ebA39AfbC3818'),
+
+                    /// native / matic
+                    value: EtherAmount.inWei(BigInt.from(0)),
+
+                    /// 3jt, 500rb
+                    maxGas: 100000,
+
+                    /// 1 gwei (10^9 wei)
+                    gasPrice: EtherAmount.inWei(
+                      BigInt.from(1500000000),
+                      // await web3serviceImpl.getPrice(),
+                    ),
+
+                    /// mau ke fungsi mana parameternya apa,
+                    /// amount USDC disini
+                    data: setAttributeSign,
+
+                    /// ini untuk EIP1559
+                    /// 3000000000
+                    // maxFeePerGas: EtherAmount.inWei(
+                    //   BigInt.from(1500000000),
+                    //   // await web3serviceImpl.getPrice(),
+                    // ),
+                    // maxPriorityFeePerGas: EtherAmount.inWei(
+                    //   BigInt.from(1500000000),
+                    //   // await web3serviceImpl.getPrice(),
+                    // ),
+                  );
+
+                  log(txObject.gasPrice!.getInWei.toString());
+                  final paymasterKey = EthPrivateKey.fromHex(
+                      '0x1b145e2a5b8d344038a5de9414e49b97905e0b0c62716027829f26c42e67891d');
+
+                  /// ini tadi error
+                  credentials = CustomCredentialEipService(
+                    privateKey: paymasterKey,
+                    client: web3serviceImpl.client,
+                    chainId: 100,
+                  );
+
+                  final result = await web3serviceImpl.client.sendTransaction(
+                    credentials,
+                    txObject,
+                    chainId: 100,
+                  );
+                  log('txHash ' + result);
+                },
+                child: Text('Send Edge'),
+              ),
               Center(
                 child: ElevatedButton(
                   child: const Text(

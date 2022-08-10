@@ -47,7 +47,12 @@ class Web3ServiceImpl {
     abi = await json.decode(abiRaw);
     contract = DeployedContract(
       ContractAbi.fromJson(json.encode(abi), 'did'),
-      EthereumAddress.fromHex('0xdCa7EF03e98e0DC2B855bE647C39ABe984fcF21B'),
+
+      /// edge
+      EthereumAddress.fromHex('0x03d5003bf0e79C5F5223588F347ebA39AfbC3818'),
+
+      /// goerli
+      // EthereumAddress.fromHex('0xdCa7EF03e98e0DC2B855bE647C39ABe984fcF21B'),
     );
 
     identityOwnerFunction = contract.function('identityOwner');

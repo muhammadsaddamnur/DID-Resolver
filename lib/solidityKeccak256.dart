@@ -53,6 +53,7 @@ class Solidity {
         list.add(bytesToHex(Uint8List.fromList(response)));
       }
     }
+    log(list.toString());
     return hexToBytes(list.join(',').replaceAll(',', ''));
   }
 }
