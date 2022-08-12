@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:eth_sig_util/util/bigint.dart';
 import 'package:eth_sig_util/util/utils.dart' as eth_sig_util;
+import 'package:eth_sig_util/util/bytes.dart' as eth_sig_util_bytes;
 import 'package:flutter/services.dart';
 import 'package:pinenacl/ed25519.dart';
 import 'package:web3dart/crypto.dart';
@@ -80,27 +82,28 @@ class Web3ServiceImpl {
     return nonce.first.toString();
   }
 
-  Future<Uint8List> setAttributeSigned(
+  Future<Transaction> setAttributeSignedTransaction(
     EthereumAddress identity,
-    int v,
-    Uint8List r,
-    Uint8List s,
+    // int v,
+    // Uint8List r,
+    // Uint8List s,
+    MsgSignature msgSignature,
     Uint8List name,
     Uint8List value,
     BigInt validity,
   ) async {
     await initContract();
-    log([
-      identity,
-      eth_sig_util.intToHex(
-        BigInt.from(v).toInt(),
-      ),
-      bytesToHex(r, include0x: true),
-      bytesToHex(s, include0x: true),
-      bytesToHex(name, include0x: true),
-      bytesToHex(value, include0x: true),
-      validity,
-    ].toString());
+    // log([
+    //   identity,
+    //   eth_sig_util.intToHex(
+    //     BigInt.from(v).toInt(),
+    //   ),
+    //   bytesToHex(r, include0x: true),
+    //   bytesToHex(s, include0x: true),
+    //   bytesToHex(name, include0x: true),
+    //   bytesToHex(value, include0x: true),
+    //   validity,
+    // ].toString());
     // final setAttributeSigned = await client.call(
     //   sender:
     //       EthereumAddress.fromHex('0xd25D03722dE1D3E911D68adf0F50FCC039b5B00C'),
@@ -116,19 +119,48 @@ class Web3ServiceImpl {
     //     validity,
     //   ],
     // );
-    final setAttributeSigned = setAttributeSignedFunction.encodeCall([
-      identity,
-      BigInt.from(v),
-      r,
-      s,
-      name,
-      value,
-      validity,
-    ]);
 
-    log(bytesToHex(setAttributeSigned));
+    // final setAttributeSigned = setAttributeSignedFunction.encodeCall([
+    //   identity,
+    //   BigInt.from(v),
+    //   r,
+    //   s,
+    //   name,
+    //   value,
+    //   validity,
+    // ]);
 
-    return setAttributeSigned;
+    final nonceTx = await client.getTransactionCount(
+      EthereumAddress.fromHex('0xd25D03722dE1D3E911D68adf0F50FCC039b5B00C'),
+      atBlock: const BlockNum.pending(),
+    );
+
+    final tx = Transaction.callContract(
+      contract: contract,
+      function: setAttributeSignedFunction,
+      nonce: nonceTx,
+      from:
+          EthereumAddress.fromHex('0xd25D03722dE1D3E911D68adf0F50FCC039b5B00C'),
+      value: EtherAmount.inWei(BigInt.from(0)),
+      maxGas: 100000,
+      gasPrice: EtherAmount.inWei(
+        BigInt.from(1500000000),
+      ),
+      parameters: [
+        identity,
+        BigInt.from(msgSignature.v),
+        encodeBigInt(msgSignature.r, length: 32),
+        encodeBigInt(msgSignature.s, length: 32),
+        eth_sig_util_bytes.setLengthRight(name, 32),
+        // Uint8List.fromList(name + Uint8List(32 - name.length)),
+        value,
+        validity,
+      ],
+    );
+
+    // log(bytesToHex(tx));
+
+    return tx;
   }
 
   Future<BigInt> getPrice() async {

@@ -72,6 +72,7 @@ class CustomCredentialEipService extends CustomTransactionSender {
     final r = padUint8ListTo32(unsignedIntToBytes(signature.r));
     final s = padUint8ListTo32(unsignedIntToBytes(signature.s));
     final v = unsignedIntToBytes(BigInt.from(signature.v));
+    log('v : ' + signature.v.toString());
 
     final ress = uint8ListFromList(r + s + v);
     log('signature : ' + bytesToHex(ress, include0x: true));
